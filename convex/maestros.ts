@@ -1,6 +1,7 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
+// Crear un maestro (mutation)
 export const crearMaestro = mutation({
   args: {
     numeroEmpleado: v.string(),
@@ -10,10 +11,18 @@ export const crearMaestro = mutation({
     gradoAcademico: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("maestros", args);
+    const nuevoId = await ctx.db.insert("maestros", {
+      numeroEmpleado: args.numeroEmpleado,
+      nombre: args.nombre,
+      correo: args.correo,
+      departamento: args.departamento,
+      gradoAcademico: args.gradoAcademico,
+    });
+    return nuevoId;
   },
 });
 
+// Obtener todos los maestros (query)
 export const obtenerMaestros = query({
   args: {},
   handler: async (ctx) => {
@@ -21,6 +30,7 @@ export const obtenerMaestros = query({
   },
 });
 
+// Actualizar un maestro (mutation)
 export const actualizarMaestro = mutation({
   args: {
     id: v.id("maestros"),
@@ -31,16 +41,25 @@ export const actualizarMaestro = mutation({
     gradoAcademico: v.string(),
   },
   handler: async (ctx, args) => {
-    const { id, ...data } = args;
-    await ctx.db.patch(id, data);
-    return await ctx.db.get(id);
+    const { id, ...datosActualizados } = args;
+    await ctx.db.patch(id, datosActualizados);
+    return id;
   },
 });
 
+// Eliminar un maestro (mutation)
 export const eliminarMaestro = mutation({
   args: { id: v.id("maestros") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
-    return true;
+    return args.id;
+  },
+});
+
+// Obtener un maestro por ID (query)
+export const obtenerMaestroPorId = query({
+  args: { id: v.id("maestros") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });
